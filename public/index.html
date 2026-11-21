@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#7a1c1c" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="/app-icon-192.png" />
+  <title>SAPC AI Academic Reviewer | San Antonio de Padua College</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=20261119-speaker-aura-v1" />
+  <!-- Confetti Canvas Library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" defer></script>
+  <!-- Document Parsers (PDF.js, Mammoth for DOCX & JSZip for PPTX) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js" defer></script>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body class="light-theme auth-active">
+
+  <!-- STANDALONE LOGIN PAGE VIEW -->
+  <section id="auth-screen" class="auth-page">
+    <div class="auth-panel">
+      <div class="auth-brand">
+        <img src="logo.png" alt="SAPC Logo" class="auth-logo" onerror="this.src='https://sapc.edu.ph/favicon.ico'; this.onerror=null;" />
+        <h2>San Antonio de Padua College</h2>
+      </div>
+      
+      <p class="auth-eyebrow">Student Portal</p>
+      <h1 id="auth-title">Welcome Paduan</h1>
+      <p id="auth-intro" class="auth-intro">Sign in with your username and password. Existing accounts can also use email.</p>
+
+      <form id="auth-form" class="auth-form" method="POST" action="#">
+        <input 
+          type="text" 
+          id="auth-username" 
+          name="identifier"
+          placeholder="Username"
+          autocomplete="username"
+          required 
+        />
+        
+        <div class="password-wrapper" id="email-password-field">
+          <input 
+            type="password" 
+            id="auth-password" 
+            name="password"
+            placeholder="Password" 
+            autocomplete="current-password"
+            required 
+          />
+          <button type="button" id="toggle-password-btn" class="toggle-password-btn" title="Show password" aria-label="Show password">Show</button>
+        </div>
+
+        <p id="auth-password-hint" class="auth-password-hint hidden">
+          No length limit. Include at least 2 of these: uppercase letters, lowercase letters, numbers, or symbols.
+        </p>
+
+        <fieldset id="auth-policy-consent" class="auth-policy-consent hidden">
+          <legend>Terms and privacy</legend>
+          <label><input id="terms-consent" type="checkbox" /> <span>I agree to the <a href="/terms.html" target="_blank" rel="noopener noreferrer">Terms of Service</a>.</span></label>
+          <label><input id="privacy-consent" type="checkbox" /> <span>I have read the <a href="/privacy.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a> and consent to the processing it describes.</span></label>
+        </fieldset>
+
+        <p id="auth-error" class="auth-error hidden" role="alert"></p>
+
+        <div class="auth-actions">
+          <button type="submit" id="auth-submit-btn" class="primary-btn">Log In</button>
+          <button type="button" id="auth-switch-btn" class="ghost">Register</button>
+        </div>
+        <button type="button" id="password-reset-btn" class="text-btn">Forgot password?</button>
+      </form>
+
+      <div class="auth-divider">
+        <span>OR</span>
+      </div>
+
+      <button id="google-signin-btn" type="button" class="secondary-btn">Continue with Google</button>
+      <p class="auth-policy-links"><a href="/terms.html">Terms of Service</a> · <a href="/privacy.html">Privacy Policy</a></p>
+    </div>
+  </section>
+
+  <!-- TOP NAVIGATION BAR -->
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="brand" id="nav-brand-btn" style="cursor: pointer;">
+        <img src="logo.png" alt="San Antonio de Padua College Logo" class="logo" onerror="this.src='https://sapc.edu.ph/favicon.ico'; this.onerror=null;" />
+        <div class="brand-text">
+          <span class="school">San Antonio de Padua College</span>
+          <span class="app-title">AI Academic Reviewer</span>
+        </div>
+      </div>
+
+      <div class="nav-actions">
+        <div id="user-profile" class="user-profile hidden">
+          <img id="user-avatar-img" class="user-avatar-img hidden" alt="Google Profile Picture" />
+          <span class="user-avatar" id="user-avatar">P</span>
+          <span id="user-name-display" class="user-name">Paduan</span>
+          <button id="profile-btn" class="logout-btn" type="button">Settings</button>
+          <button id="logout-btn" class="logout-btn" type="button" title="Log Out">Log Out</button>
+        </div>
+
+        <button id="nav-launch-btn" class="nav-accent-btn">Launch Academic Reviewer</button>
+        <button id="nav-practice-test-btn" class="nav-accent-btn" type="button">Practice Test</button>
+        <button id="nav-friends-btn" class="nav-accent-btn" type="button">Friends</button>
+        <a class="nav-accent-btn" href="https://sapc.communify.ph" target="_blank" rel="noopener noreferrer">SAPC COMMUNIFY</a>
+        <button id="theme-toggle" class="icon-btn" title="Toggle Theme" aria-label="Toggle Theme">
+          <span id="theme-label" class="btn-text">Dark</span>
+        </button>
+        <button id="pwa-install-btn" class="nav-accent-btn pwa-install-btn hidden" type="button">Install app</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- PAGE 1: PRIMARY LANDING WEBPAGE VIEW -->
+  <div id="landing-view" class="landing-container">
+    <section class="hero-section">
+      <div class="hero-badge">
+        <span class="badge-dot"></span> AI-powered study tools for San Antonio de Padua College senior high school students
+      </div>
+      <h1 class="hero-title">Magandang araw! <span class="text-gradient">Paduans</span></h1>
+      <p class="hero-subtitle">
+        Turn notes, PDFs, presentations, and images into study flashcards. Choose your subject and curriculum, let the app suggest a subject from your notes, or generate a starter deck without uploading materials. Then review with flashcards or prepare with a practice examination.
+      </p>
+
+      <div class="hero-cta-group">
+        <button id="hero-start-btn" class="cta-primary-btn">
+          <span>Start Reviewing Now</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12" 5 19 12 12 19"></polyline></svg>
+        </button>
+        <a href="#features-anchor" class="cta-secondary-btn">Explore Features</a>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-num">SHS</span>
+          <span class="stat-label">Grade 11 & 12 Tiers</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-num">2 Curricula</span>
+          <span class="stat-label">Current SHS and Strengthened SHS</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-num">Study + Test</span>
+          <span class="stat-label">Flashcards and practice exams</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="features-section" id="features-anchor">
+      <div class="section-header">
+        <h2>Study tools made for your courses</h2>
+        <p>Build a reviewer from your materials, practice what you learned, and keep control of your study flow.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <h3>Flexible flashcard generation</h3>
+          <p>Generate from pasted notes or uploaded PDFs, PPTX files, and images. You can also start with a subject when you do not have notes ready.</p>
+        </div>
+
+        <div class="feature-card">
+          <h3>Curriculum and subject choices</h3>
+          <p>Select Grade 11 or 12, Current or Strengthened SHS, and the available strand or subject options. Subject detection can suggest a match from your notes.</p>
+        </div>
+
+        <div class="feature-card">
+          <h3>Practice examinations</h3>
+          <p>Use easy, medium, or hard modes, choose a question count and time limit, or create a custom exam with your own questions and answers.</p>
+        </div>
+
+        <div class="feature-card">
+          <h3>YouTube transcript import</h3>
+          <p>Paste transcript text from a YouTube lesson to use it as study material for flashcard generation.</p>
+        </div>
+
+        <div class="feature-card">
+          <h3>Edit your study deck</h3>
+          <p>Add your own cards or edit and remove cards, then export or import a deck as JSON to keep a copy.</p>
+        </div>
+
+        <div class="feature-card">
+          <h3>Study with classmates</h3>
+          <p>Connect with friends, chat one-to-one or in groups, choose a conversation theme, and share study decks with a link. Install the app on a phone or computer, and switch between light and dark appearance in Account Settings.</p>
+        </div>
+
+        <div class="feature-card">
+          <h3>Voice and video calls</h3>
+          <p>Call classmates with voice or video, send voice messages, customize incoming ringtones, switch media devices, use push-to-talk, share your screen, and keep a floating mini-call open while studying.</p>
+        </div>
+
+        <div class="feature-card">
+          <h3>Privacy and safety controls</h3>
+          <p>Review the Terms and Privacy Policy, report abusive messages, block accounts, and submit a privacy request from the app.</p>
+        </div>
+      </div>
+    </section>
+    <footer class="site-legal-links"><a href="/terms.html">Terms of Service</a><a href="/privacy.html">Privacy Policy</a></footer>
+  </div>
+
+  <!-- PAGE 2: APPLICATION WORKSPACE VIEW -->
+  <main id="app-view" class="dashboard-layout hidden">
+    <div class="left-column">
+      <div id="app-notice" class="app-notice hidden" role="status" aria-live="polite">
+        <span id="app-notice-message"></span>
+        <button id="app-notice-dismiss" type="button" aria-label="Dismiss notice">×</button>
+      </div>
+      <section class="panel main-content">
+        <div class="panel-header">
+          <div>
+            <h2>Study Material</h2>
+              <p class="sub">Choose your SHS course, then paste module text or upload files (Images, PDF, DOCX, PPTX).</p>
+          </div>
+        </div>
+
+        <div class="shs-subject-picker" aria-label="Choose curriculum and subject">
+          <div class="shs-subject-heading">
+            <strong>Course focus</strong>
+            <span id="subject-ai-mode" class="subject-ai-mode">AI mode: General</span>
+          </div>
+          <div class="shs-subject-field">
+            <label for="shs-curriculum">SHS curriculum</label>
+            <select id="shs-curriculum">
+              <option value="current">Current SHS curriculum</option>
+              <option value="strengthened">Strengthened SHS curriculum</option>
+            </select>
+          </div>
+          <div class="shs-subject-field">
+            <label for="shs-pathway">Track / strand / cluster</label>
+            <select id="shs-pathway"></select>
+          </div>
+          <div class="shs-subject-field">
+            <label for="shs-subject">Subject</label>
+            <select id="shs-subject"></select>
+          </div>
+          <div class="subject-auto-detect">
+            <button id="detect-subject-btn" class="ghost" type="button">Detect subject from notes</button>
+            <span id="subject-detection-status" role="status" aria-live="polite">Choose a track and subject, or let AI detect the best match from your notes.</span>
+          </div>
+          <p class="shs-subject-note">SY 2026–27: Strengthened SHS is for all Grade 11 learners and Grade 12 learners in pilot schools. Electives vary by school.</p>
+        </div>
+
+        <div class="notes-editor">
+          <div class="notes-editor-header">
+            <label for="notes">Your study material</label>
+            <span>Optional: paste text or attach a file</span>
+            <button id="youtube-import-toggle" class="ghost youtube-import-toggle" type="button" aria-expanded="false" aria-controls="youtube-import-panel">YouTube Transcript</button>
+          </div>
+          <textarea id="notes" placeholder="Paste your lesson notes, reviewer, or key concepts here..."></textarea>
+          <div id="youtube-import-panel" class="youtube-import-row hidden">
+            <label for="youtube-url">YouTube video link (optional)</label>
+            <div class="youtube-import-controls">
+              <input id="youtube-url" type="url" placeholder="Paste the video link" />
+            </div>
+            <label for="youtube-transcript">Paste its transcript</label>
+            <textarea id="youtube-transcript" rows="3" placeholder="On YouTube, open the video menu and choose Show transcript, then copy and paste the text here."></textarea>
+            <button id="youtube-import-btn" class="secondary-btn" type="button">Add transcript to study material</button>
+            <p id="youtube-import-status" class="youtube-import-status" role="status" aria-live="polite"></p>
+          </div>
+          <div class="notes-editor-footer">
+            <span>Add material for a focused reviewer, or leave it blank to generate from your selected subject.</span>
+            <span id="notes-count">0 characters</span>
+          </div>
+        </div>
+
+        <div id="image-previews" class="image-previews hidden" aria-label="Selected file previews"></div>
+        
+        <!-- TOOLBAR & CONTROLS -->
+        <div class="toolbar-container">
+          <!-- Row 1: File Upload & Status -->
+          <div class="upload-row">
+            <label for="image" id="upload-drop-zone" class="upload-btn drop-zone" role="button" tabindex="0" aria-label="Drop files here or choose files">
+              <span>Drop files here (Images, PDF, DOCX, PPTX) or choose files</span>
+            </label>
+            <input 
+              type="file" 
+              id="image" 
+              accept="image/*,.pdf,.docx,.pptx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation"
+              multiple 
+              style="display: none;" 
+            />
+            <span id="file-name" class="file-status" aria-live="polite">No files selected</span>
+          </div>
+
+          <!-- Row 2: Aligned Options Grid -->
+          <div class="controls-row">
+            <div class="control-item">
+              <label for="voice-select">Voice</label>
+              <select id="voice-select">
+                <option value="">Auto / Default</option>
+              </select>
+            </div>
+
+            <div class="control-item">
+              <label for="count">Cards</label>
+              <select id="count">
+                <option>5</option><option selected>10</option><option>15</option><option>20</option>
+                  <option>25</option><option>30</option>
+              </select>
+            </div>
+
+            <div class="control-item">
+              <label for="difficulty">Difficulty</label>
+              <select id="difficulty">
+                <option value="easy">Easy</option>
+                <option value="medium" selected>Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Row 3: Action Buttons -->
+          <div class="actions-row">
+            <button id="generate" class="primary-btn generate-btn">Generate flashcards</button>
+            <label for="import-file-input" class="secondary-btn custom-card-btn" style="cursor: pointer; display: inline-flex; align-items: center; justify-content: center; text-align: center; background: var(--paper); color: var(--primary); border: 1.5px solid var(--line); border-radius: 10px; font-weight: 600; font-size: 0.9rem; height: 42px;">Import JSON</label>
+            <input type="file" id="import-file-input" accept=".json,application/json" class="hidden" />
+            <button id="main-export-btn" class="secondary-btn custom-card-btn">Export JSON</button>
+            <button id="manual-add-btn" class="secondary-btn custom-card-btn">Add card</button>
+            <button id="share-deck-btn" class="secondary-btn custom-card-btn">Share</button>
+          </div>
+          <p class="ai-study-disclaimer">AI-generated cards are study aids and can contain mistakes. Check them against your course materials and your instructor’s guidance; they are not official exam questions or a substitute for instruction.</p>
+
+          <!-- Progress / Loading Bar -->
+          <div id="generation-loading-container" class="loading-container hidden">
+            <div class="loading-bar-track">
+              <div id="generation-progress-bar" class="loading-bar-fill"></div>
+            </div>
+            <p id="loading-text" class="loading-status-text">Analyzing material & generating flashcards...</p>
+          </div>
+
+          <div id="status" role="status" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section id="study" class="panel hidden">
+        <div class="study-header">
+          <div class="meta">
+            <span id="counter">Card 0 of 0</span>
+            <span id="live-score-pill" class="score-pill">Score: 0 / 0</span>
+            <div class="progress"><span id="bar"></span></div>
+          </div>
+          <button id="fullscreen-toggle" class="fullscreen-toggle" type="button" aria-pressed="false">Fullscreen</button>
+          <details id="card-actions" class="card-actions">
+            <summary>Card options</summary>
+            <div class="card-actions-menu">
+              <button id="edit-card-btn" class="compact-btn" type="button">Edit card</button>
+              <button id="delete-card-btn" class="compact-btn danger" type="button">Delete card</button>
+              <button id="clear-all-cards-btn" class="compact-btn danger" type="button">Delete all cards</button>
+            </div>
+          </details>
+        </div>
+
+        <!-- FLASHCARD AREA -->
+        <div class="card" id="card">
+          <span id="quiz-timer-display" class="quiz-timer-display hidden" role="status" aria-live="polite"></span>
+          <div class="card-inner">
+            <div class="face front" id="front"></div>
+            <div class="face back" id="back"></div>
+          </div>
+        </div>
+        <div id="typed-answer-entry" class="typed-answer-entry hidden"></div>
+
+        <!-- RESULTS SUMMARY DASHBOARD -->
+        <div id="quiz-summary" class="quiz-summary hidden">
+          <div class="summary-badge">🎉 Deck Complete!</div>
+          <h2 class="summary-title">Session Results</h2>
+          <div class="summary-score-ring">
+            <span id="summary-percentage" class="score-percent">0%</span>
+            <span id="summary-score-text" class="score-subtext">0 of 0 Correct</span>
+          </div>
+          <p id="summary-message" class="summary-message">Great effort studying! Keep practicing to master all topics.</p>
+          <div class="summary-actions">
+            <button id="restart-deck-btn" class="primary-btn">Restart Review</button>
+          </div>
+        </div>
+
+        <p id="hint-text" class="hint">Click card or press <kbd>Space</kbd> to flip · <kbd>←</kbd> <kbd>→</kbd> to navigate</p>
+
+        <div id="study-controls" class="controls">
+          <button class="ghost" id="prev">← Prev</button>
+          <button class="ghost" id="shuffle">Shuffle</button>
+          <button class="ghost" id="ai-hint-btn">Hint</button>
+          <select id="quiz-time-limit" aria-label="Quiz time limit">
+            <option value="0">No timer</option>
+            <option value="60">1 minute</option>
+            <option value="180">3 minutes</option>
+            <option value="300">5 minutes</option>
+          </select>
+          <button id="next" class="primary-btn">Next →</button>
+        </div>
+        <p id="ai-hint-output" class="ai-hint-output hidden" role="status" aria-live="polite"></p>
+      </section>
+
+      <section id="progress-dashboard" class="panel progress-dashboard">
+        <div class="panel-header">
+          <div>
+            <h2>Progress Dashboard</h2>
+            <p class="sub">Your learning activity and cards that need another review.</p>
+          </div>
+          <button id="weak-cards-btn" class="secondary-btn" type="button">Review weak cards</button>
+        </div>
+        <p id="weak-cards-status" class="progress-status" role="status" aria-live="polite"></p>
+        <div class="progress-stat-grid">
+          <div class="progress-stat"><strong id="stat-streak">0</strong><span>day streak</span></div>
+          <div class="progress-stat"><strong id="stat-accuracy">0%</strong><span>accuracy</span></div>
+          <div class="progress-stat"><strong id="stat-sessions">0</strong><span>sessions</span></div>
+          <div class="progress-stat"><strong id="stat-due">0</strong><span>cards due</span></div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="sidebar-panel">
+      <div class="side-card">
+        <h3>Grade Level</h3>
+        <p class="side-sub">Select student deployment tier:</p>
+        <div class="selection-grid" id="grade-container">
+          <button type="button" class="selector-badge active" data-value="Grade 11" aria-pressed="true">Grade 11</button>
+          <button type="button" class="selector-badge" data-value="Grade 12" aria-pressed="false">Grade 12</button>
+        </div>
+      </div>
+
+      <div class="side-card">
+        <h3>Open a shared deck</h3>
+        <div class="shared-deck-toolbar">
+          <input id="shared-deck-link" type="url" placeholder="Paste shared deck link" aria-label="Paste shared deck link" />
+          <button id="open-shared-deck-btn" class="ghost" type="button">Open</button>
+        </div>
+        <p id="shared-deck-status" class="friend-status hidden" role="status"></p>
+      </div>
+
+      <div class="side-card">
+        <h3 id="strand-section-header">Grade 11 Section</h3>
+        <p class="side-sub" id="strand-section-sub">Select class section focus:</p>
+        <div class="selection-grid" id="strand-container"></div>
+        <p id="selection-summary" class="selection-summary" aria-live="polite">
+          Generating for Grade 11 / Excellence (General)
+        </p>
+      </div>
+
+      <div class="side-card info-card">
+        <h3>Reviewer Tips</h3>
+        <ul class="guide-list">
+          <li>Select high-quality voices like Microsoft Natural or Google voices from the toolbar dropdown.</li>
+          <li>Click <kbd>⏪</kbd> to rewind narration to the start, or <kbd>🔊</kbd> to pause and resume.</li>
+          <li>Press <kbd>Space</kbd> to flip cards and arrow keys to navigate.</li>
+        </ul>
+      </div>
+
+      <div class="side-card info-card">
+        <h3>Supported File Types</h3>
+        <ul class="guide-list">
+          <li>Images: PNG, JPG, JPEG, GIF</li>
+          <li>Documents: PDF, DOCX, PPTX, TXT</li>
+        </ul>
+      </div>
+
+      <div class="side-card info-card">
+        <h3>Text-to-Speech Narration</h3>
+        <ul class="guide-list">
+          <li>Text-to-speech narration is supported for all uploaded content types.</li>
+          <li>Click the <kbd>voice</kbd> dropdown to select a preferred voice for text-to-speech narration.</li>
+          <li>Narration and text-to-speech features are supported for all uploaded content types.</li>
+          <li>Click the <kbd>⏪</kbd> button to rewind narration to the start, or <kbd>🔊</kbd> to pause and resume.</li>
+        </ul>
+      </div>
+
+      <div class="side-card info-card">
+        <h3>How to Save and Import Flashcards</h3>
+        <ul class="guide-list">
+          <li>Click <kbd>Export JSON</kbd> to download your flashcards as a JSON file.</li>
+          <li>Click <kbd>Import JSON</kbd> and select a saved JSON file to restore flashcards.</li>
+        </ul>
+      </div>
+    </aside>
+  </main>
+
+  <section id="friends-view" class="friends-page hidden">
+    <div class="friends-page-header">
+      <div>
+        <p class="modal-eyebrow">STUDY COMMUNITY</p>
+        <h1>Friends</h1>
+        <p>Find classmates, manage requests, and share reviewer decks.</p>
+      </div>
+      <button id="friends-back-btn" class="ghost" type="button">Back to reviewer</button>
+    </div>
+    <div class="friends-page-grid">
+      <section class="friends-card group-chats-card">
+        <div class="group-chats-heading">
+          <div><h2>Group chats</h2><p>Chat with several friends in one place.</p></div>
+          <button id="friends-create-group-btn" class="primary-btn" type="button">Create group</button>
+        </div>
+        <div id="group-chat-list" class="saved-decks-list"></div>
+      </section>
+      <section class="friends-card">
+        <h2>Incoming requests</h2>
+        <div id="friend-requests-list" class="saved-decks-list"></div>
+      </section>
+      <section class="friends-card">
+        <h2>Outgoing requests</h2>
+        <div id="outgoing-friend-requests-list" class="saved-decks-list"></div>
+      </section>
+      <section class="friends-card friends-list-card">
+        <h2>Your friends</h2>
+        <div id="friends-list" class="saved-decks-list"></div>
+        <p class="community-tip">Friends can view your public profile and receive links to reviewer decks you choose to share.</p>
+      </section>
+    </div>
+  </section>
+
+  <section id="practice-test-view" class="assessment-page hidden">
+    <div class="assessment-page-header">
+      <div>
+        <p class="modal-eyebrow">ASSESSMENT CENTER</p>
+        <h1>Practice Examination</h1>
+        <p>Complete a formal, timed assessment from your current reviewer deck.</p>
+      </div>
+      <button id="practice-test-back-btn" class="secondary-btn" type="button">Back to reviewer</button>
+    </div>
+
+    <section id="practice-test-setup" class="assessment-card">
+      <div class="assessment-card-heading">
+        <span class="assessment-step">01</span>
+        <div><h2>Examination setup</h2><p>Review the test settings before beginning.</p></div>
+      </div>
+      <div class="assessment-deck-summary">
+        <span>Selected reviewer</span>
+        <strong id="practice-test-deck-meta">No reviewer loaded</strong>
+      </div>
+      <div id="practice-test-no-deck" class="assessment-notice hidden">
+        Load a reviewer for a deck-based exam, or create a custom exam below.
+      </div>
+      <div class="assessment-settings">
+        <div>
+          <label for="practice-test-count">Number of questions</label>
+          <select id="practice-test-count">
+            <option value="5">5 questions</option>
+            <option value="10" selected>10 questions</option>
+            <option value="20">20 questions</option>
+            <option value="all">All available questions</option>
+          </select>
+        </div>
+        <div>
+          <label for="practice-test-duration">Time limit</label>
+          <select id="practice-test-duration">
+            <option value="0">No time limit</option>
+            <option value="10">10 minutes</option>
+            <option value="20">20 minutes</option>
+            <option value="30">30 minutes</option>
+          </select>
+        </div>
+        <div>
+          <label for="practice-test-difficulty">Difficulty</label>
+          <select id="practice-test-difficulty">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+      </div>
+      <div class="assessment-instructions">
+        <h3>Instructions</h3>
+        <ol>
+          <li>Answer each question before submitting the examination.</li>
+          <li>Use Previous and Next to move between questions; your answers are saved automatically.</li>
+          <li>Easy uses true-or-false and multiple-choice questions; Math uses multiplication. Medium uses identification, and Hard uses enumeration.</li>
+          <li>Submitting ends the attempt and displays your score and answer review.</li>
+        </ol>
+      </div>
+      <p id="practice-test-status" class="friend-status hidden" role="status" aria-live="polite"></p>
+      <div class="assessment-setup-actions">
+        <button id="create-custom-exam-btn" class="secondary-btn" type="button">Create a custom exam</button>
+        <button id="start-practice-test-btn" class="primary-btn assessment-start" type="button">Begin examination</button>
+      </div>
+    </section>
+
+    <section id="custom-exam-builder" class="assessment-card hidden">
+      <div class="assessment-card-heading">
+        <span class="assessment-step">02</span>
+        <div><h2>Custom examination</h2><p>Write your own questions and set the correct answers.</p></div>
+      </div>
+      <div class="custom-exam-title-field">
+        <label for="custom-exam-title">Examination title</label>
+        <input id="custom-exam-title" type="text" maxlength="80" placeholder="e.g. Quadratic Equations Review" />
+      </div>
+      <div class="custom-exam-question-editor">
+        <label for="custom-exam-question">Question</label>
+        <textarea id="custom-exam-question" rows="3" placeholder="Write your question"></textarea>
+        <label for="custom-exam-question-type">Question type</label>
+        <select id="custom-exam-question-type">
+          <option value="identification">Short answer</option>
+          <option value="enumeration">Enumeration</option>
+          <option value="multiple-choice">Multiple choice</option>
+          <option value="true-false">True or false</option>
+        </select>
+        <label for="custom-exam-question-difficulty">Question difficulty</label>
+        <select id="custom-exam-question-difficulty">
+          <option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option>
+        </select>
+        <div id="custom-exam-written-fields" class="custom-exam-answer-fields">
+          <label for="custom-exam-answer">Correct answer</label>
+          <textarea id="custom-exam-answer" rows="2" placeholder="For enumeration, enter one item per line"></textarea>
+        </div>
+        <div id="custom-exam-choice-fields" class="custom-exam-answer-fields hidden">
+          <label for="custom-exam-option-a">Choices</label>
+          <input id="custom-exam-option-a" type="text" placeholder="A. First option" />
+          <input id="custom-exam-option-b" type="text" placeholder="B. Second option" />
+          <input id="custom-exam-option-c" type="text" placeholder="C. Third option" />
+          <input id="custom-exam-option-d" type="text" placeholder="D. Fourth option" />
+          <label for="custom-exam-correct-option">Correct choice</label>
+          <select id="custom-exam-correct-option">
+            <option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option>
+          </select>
+        </div>
+        <div id="custom-exam-true-false-fields" class="custom-exam-answer-fields hidden">
+          <label for="custom-exam-true-false-answer">Correct answer</label>
+          <select id="custom-exam-true-false-answer"><option>True</option><option>False</option></select>
+        </div>
+        <button id="add-custom-exam-question-btn" class="secondary-btn" type="button">Add question</button>
+        <p id="custom-exam-builder-status" class="friend-status" role="status" aria-live="polite"></p>
+      </div>
+      <div class="custom-exam-draft-heading"><h3>Exam questions</h3><span id="custom-exam-question-count">0 questions</span></div>
+      <ol id="custom-exam-question-list" class="custom-exam-question-list"></ol>
+      <div class="assessment-setup-actions">
+        <button id="custom-exam-cancel-btn" class="ghost" type="button">Back to exam settings</button>
+        <button id="start-custom-exam-btn" class="primary-btn assessment-start" type="button" disabled>Begin custom exam</button>
+      </div>
+    </section>
+
+    <section id="practice-test-exam" class="assessment-card hidden" aria-live="polite">
+      <div class="assessment-exam-heading">
+        <div><p class="modal-eyebrow">PRACTICE EXAMINATION</p><h2 id="practice-test-subject">Reviewer assessment</h2></div>
+        <div class="assessment-exam-meta"><span id="practice-test-counter">Question 1 of 1</span><strong id="practice-test-clock">Untimed</strong></div>
+      </div>
+      <div class="assessment-progress"><span id="practice-test-progress"></span></div>
+      <div id="practice-test-question"></div>
+      <div class="assessment-navigation">
+        <button id="practice-test-prev" class="ghost" type="button">← Previous</button>
+        <button id="practice-test-next" class="secondary-btn" type="button">Next →</button>
+        <button id="practice-test-submit" class="primary-btn" type="button">Submit examination</button>
+      </div>
+    </section>
+
+    <section id="practice-test-results" class="assessment-card hidden" aria-live="polite"></section>
+    <div id="practice-test-confirm" class="assessment-confirm hidden" role="alertdialog" aria-modal="true" aria-labelledby="practice-test-confirm-title" aria-describedby="practice-test-confirm-message">
+      <div class="assessment-confirm-card">
+        <p class="modal-eyebrow">CONFIRM ACTION</p>
+        <h2 id="practice-test-confirm-title">Submit examination?</h2>
+        <p id="practice-test-confirm-message">Are you sure you want to continue?</p>
+        <div class="assessment-confirm-actions">
+          <button id="practice-test-confirm-no" class="secondary-btn" type="button">No, continue</button>
+          <button id="practice-test-confirm-yes" class="primary-btn" type="button">Yes, submit</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODAL DIALOG: FLASHCARD CREATOR / EDITOR -->
+  <div id="card-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-title">Create Flashcard</h3>
+        <button id="close-modal-btn" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <label for="modal-card-type">Card type:</label>
+        <select id="modal-card-type">
+          <option value="identification">Identification</option>
+          <option value="multiple-choice">Multiple choice</option>
+          <option value="enumeration">Enumeration</option>
+          <option value="true-false">True or false</option>
+        </select>
+
+        <label for="modal-question">Question / Definition Prompt:</label>
+        <textarea id="modal-question" rows="4" placeholder="Enter question or definition prompt..."></textarea>
+
+        <div class="custom-card-fields" data-card-type="identification">
+          <label for="modal-answer">Answer / Correct Term:</label>
+          <textarea id="modal-answer" rows="2" placeholder="Enter exact answer (1 to 3 words)..."></textarea>
+          <label for="modal-id-explanation">Explanation (optional):</label>
+          <textarea id="modal-id-explanation" rows="2" placeholder="Explain this term or concept..."></textarea>
+        </div>
+
+        <div class="custom-card-fields" data-card-type="multiple-choice">
+          <div class="custom-choice-grid">
+            <label for="modal-option-a">Option A<input id="modal-option-a" type="text" /></label>
+            <label for="modal-option-b">Option B<input id="modal-option-b" type="text" /></label>
+            <label for="modal-option-c">Option C<input id="modal-option-c" type="text" /></label>
+            <label for="modal-option-d">Option D<input id="modal-option-d" type="text" /></label>
+          </div>
+          <label for="modal-correct-option">Correct option:</label>
+          <select id="modal-correct-option">
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+          </select>
+          <label for="modal-mc-explanation">Explanation (optional):</label>
+          <textarea id="modal-mc-explanation" rows="3" placeholder="Explain why this option is correct..."></textarea>
+        </div>
+
+        <div class="custom-card-fields" data-card-type="enumeration">
+          <label for="modal-enumeration-answer">Expected items, one per line:</label>
+          <textarea id="modal-enumeration-answer" rows="4" placeholder="Enter one expected item per line"></textarea>
+        </div>
+
+        <div class="custom-card-fields" data-card-type="true-false">
+          <label for="modal-true-false-answer">Correct answer:</label>
+          <select id="modal-true-false-answer">
+            <option value="True">True / Tama</option>
+            <option value="False">False / Mali</option>
+          </select>
+          <label for="modal-explanation">Explanation (optional):</label>
+          <textarea id="modal-explanation" rows="3" placeholder="Explain why this statement is true/false or tama/mali..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="cancel-modal-btn" class="ghost">Cancel</button>
+        <button id="save-card-btn" class="primary-btn">Save Flashcard</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="chat-image-viewer" class="chat-image-viewer hidden">
+    <img id="chat-image-viewer-backdrop" class="chat-image-viewer-backdrop" alt="" aria-hidden="true" />
+    <div class="chat-image-viewer-toolbar">
+      <span id="chat-image-viewer-counter" class="chat-image-viewer-counter">1 of 1</span>
+      <div>
+        <button id="chat-image-viewer-download" type="button" aria-label="Download image">Download</button>
+        <button id="chat-image-viewer-share" type="button" aria-label="Share image">Share</button>
+        <button id="chat-image-viewer-close" type="button" aria-label="Close viewer">Close</button>
+      </div>
+    </div>
+    <button id="chat-image-viewer-prev" class="chat-image-viewer-nav previous" type="button" aria-label="Previous photo">‹</button>
+    <div id="chat-image-viewer-stage" class="chat-image-viewer-stage" aria-label="Full-size photo">
+      <img id="chat-image-viewer-image" alt="Full-size image from chat">
+    </div>
+    <button id="chat-image-viewer-next" class="chat-image-viewer-nav next" type="button" aria-label="Next photo">›</button>
+    <div id="chat-image-viewer-thumbnails" class="chat-image-viewer-thumbnails" aria-label="Photos in this message"></div>
+  </div>
+
+  <div id="profile-modal" class="modal hidden">
+    <div class="modal-content profile-modal-content">
+      <div class="modal-header">
+        <div>
+          <p class="modal-eyebrow">YOUR ACCOUNT</p>
+          <h3>Account settings</h3>
+        </div>
+
+        <button id="close-profile-btn" class="close-btn" type="button">&times;</button>
+      </div>
+      <div class="modal-body profile-form">
+        <div class="profile-identity">
+          <div class="profile-avatar-picker">
+            <img id="profile-photo-preview" class="profile-photo-preview hidden" alt="Profile photo preview" />
+            <span class="profile-avatar-placeholder">P</span>
+            <input id="profile-photo-file" type="file" accept="image/png,image/jpeg,image/webp" />
+          </div>
+          <div class="profile-identity-copy">
+            <h4>How should classmates find you?</h4>
+            <p>Use a name and photo that your classmates will recognize.</p>
+            <label for="profile-photo-file" class="avatar-upload-btn">Change photo</label>
+          </div>
+        </div>
+        <input id="profile-photo-url" type="hidden" />
+        <div class="form-field">
+          <label for="profile-username">Username</label>
+          <input id="profile-username" type="text" maxlength="24" placeholder="e.g. alex.santos" />
+          <small class="form-help">Use this username to sign in without typing your email.</small>
+        </div>
+        <div class="form-field">
+          <label for="profile-display-name">Display name</label>
+          <input id="profile-display-name" type="text" maxlength="80" placeholder="e.g. Alex Santos" />
+        </div>
+        <div class="profile-field-row">
+          <div class="form-field">
+            <label for="profile-grade">Grade level</label>
+            <select id="profile-grade"><option>Grade 11</option><option>Grade 12</option></select>
+          </div>
+          <div class="form-field">
+            <label for="profile-strand">Strand / section</label>
+            <input id="profile-strand" type="text" maxlength="50" placeholder="e.g. STEM" />
+          </div>
+        </div>
+        <div class="form-field">
+          <label for="profile-bio">About you <span>optional</span></label>
+          <textarea id="profile-bio" rows="3" maxlength="300" placeholder="A short introduction..."></textarea>
+        </div>
+        <section class="profile-appearance" aria-labelledby="profile-appearance-label">
+          <label id="profile-appearance-label" for="profile-theme-choice">Appearance (Light / Dark)</label>
+          <select id="profile-theme-choice" aria-label="Appearance (Light / Dark)">
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </section>
+        <div class="form-field">
+          <label for="call-ringtone-choice">Incoming call ringtone</label>
+          <div class="ringtone-preference-row">
+            <select id="call-ringtone-choice" aria-describedby="call-ringtone-help">
+              <option value="classic">Classic ring</option>
+              <option value="gentle">Gentle chime</option>
+              <option value="digital">Digital pulse</option>
+              <option value="bright">Bright bells</option>
+              <option value="custom">My uploaded ringtone</option>
+              <option value="off">Silent</option>
+            </select>
+            <button id="call-ringtone-preview" class="secondary-btn" type="button">Preview</button>
+          </div>
+          <div class="ringtone-upload-row">
+            <input id="call-ringtone-file" type="file" accept="audio/*,.mp3,.m4a,.aac,.wav,.ogg,.oga,.webm" hidden />
+            <button id="call-ringtone-upload" class="secondary-btn" type="button">Upload ringtone</button>
+            <button id="call-ringtone-remove" class="ghost" type="button">Remove upload</button>
+          </div>
+          <small id="call-ringtone-file-name" class="form-help">No custom ringtone uploaded.</small>
+          <small id="call-ringtone-help" class="form-help">Saved on this device. A tap or keypress may be needed before browsers allow ringtone audio.</small>
+        </div>
+        <div class="account-link-card">
+          <div>
+            <strong>Google account connection</strong>
+            <p id="google-link-status">Link Google after signup for optional one-click sign-in and account recovery.</p>
+          </div>
+          <button id="link-google-btn" class="secondary-btn" type="button">Link Google account</button>
+        </div>
+        <section class="profile-safety-settings" aria-labelledby="profile-safety-title">
+          <div><h4 id="profile-safety-title">Safety and privacy</h4><p>Manage accounts you have blocked or submit a data request.</p></div>
+          <div id="blocked-users-list" class="blocked-users-list"><small>Loading blocked accounts…</small></div>
+          <a href="/privacy.html">Open Privacy Policy or request your data</a>
+        </section>
+      </div>
+      <div class="modal-footer">
+        <button id="cancel-profile-btn" class="ghost" type="button">Cancel</button>
+        <button id="save-profile-btn" class="primary-btn" type="button">Save profile</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="friend-profile-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="friend-profile-title">
+    <div class="modal-content friend-profile-modal-content">
+      <div class="modal-header">
+        <div>
+          <p class="modal-eyebrow">CLASSMATE PROFILE</p>
+          <h3 id="friend-profile-title">Profile</h3>
+        </div>
+        <button id="close-friend-profile-btn" class="close-btn" type="button">&times;</button>
+      </div>
+      <div class="friend-profile-body">
+        <div class="friend-profile-heading">
+          <img id="friend-profile-photo" class="friend-profile-photo hidden" alt="" />
+          <div id="friend-profile-avatar" class="friend-profile-avatar">P</div>
+          <div>
+            <h2 id="friend-profile-name">Paduan</h2>
+            <p id="friend-profile-username">@username</p>
+            <span id="friend-profile-presence" class="friend-presence">Offline</span>
+          </div>
+        </div>
+        <div class="friend-profile-details">
+          <div><span>Grade</span><strong id="friend-profile-grade">Student</strong></div>
+          <div><span>Strand / section</span><strong id="friend-profile-strand">—</strong></div>
+        </div>
+        <p id="friend-profile-bio" class="friend-profile-bio">No bio yet.</p>
+      </div>
+      <div class="modal-footer">
+        <button id="close-friend-profile-footer-btn" class="primary-btn" type="button">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="friend-remove-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="friend-remove-title" aria-describedby="friend-remove-message">
+    <div class="modal-content friend-remove-content">
+      <div class="friend-remove-icon" aria-hidden="true">!</div>
+      <div class="friend-remove-copy">
+        <p class="modal-eyebrow">FRIENDS</p>
+        <h2 id="friend-remove-title">Remove friend?</h2>
+        <p id="friend-remove-message">This person will be removed from your friends list.</p>
+        <p id="friend-remove-error" class="friend-remove-error hidden" role="status" aria-live="polite"></p>
+      </div>
+      <div class="friend-remove-actions">
+        <button id="friend-remove-cancel" class="secondary-btn" type="button">Cancel</button>
+        <button id="friend-remove-confirm" class="danger-btn" type="button">Remove friend</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="chat-block-confirm-modal" class="modal chat-block-confirm-modal hidden" role="dialog" aria-modal="true" aria-labelledby="chat-block-confirm-title" aria-describedby="chat-block-confirm-message">
+    <div class="modal-content friend-remove-content chat-block-confirm-content">
+      <div class="friend-remove-icon" aria-hidden="true">!</div>
+      <div class="friend-remove-copy">
+        <p class="modal-eyebrow">CHAT SAFETY</p>
+        <h2 id="chat-block-confirm-title">Block this person?</h2>
+        <p id="chat-block-confirm-message">They will no longer be able to message or call you.</p>
+        <p id="chat-block-confirm-error" class="friend-remove-error hidden" role="status" aria-live="polite"></p>
+      </div>
+      <div class="friend-remove-actions">
+        <button id="chat-block-confirm-cancel" class="secondary-btn" type="button">Cancel</button>
+        <button id="chat-block-confirm-submit" class="danger-btn" type="button">Block user</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="photo-crop-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="photo-crop-title">
+    <div class="modal-content photo-crop-content">
+      <div class="modal-header">
+        <div>
+          <p class="modal-eyebrow">PROFILE PHOTO</p>
+          <h3 id="photo-crop-title">Position your photo</h3>
+        </div>
+        <button id="close-photo-crop-btn" class="close-btn" type="button">&times;</button>
+      </div>
+      <div class="photo-crop-stage">
+        <div id="photo-crop-editor" class="photo-crop-editor">
+          <canvas id="photo-crop-canvas" width="320" height="320"></canvas>
+          <div class="photo-crop-guides" aria-hidden="true">
+            <i></i><i></i><i></i><i></i>
+            <b></b><b></b>
+          </div>
+          <button id="photo-rotation-handle" class="photo-rotation-handle" type="button" aria-label="Drag to rotate photo">↻</button>
+        </div>
+      </div>
+      <label class="photo-zoom-control" for="photo-zoom">
+        <span>Zoom</span>
+        <input id="photo-zoom" type="range" min="1" max="3" step="0.01" value="1" />
+      </label>
+      <label class="photo-guides-toggle">
+        <input id="photo-guides-toggle" type="checkbox" checked />
+        <span>Show guide lines</span>
+      </label>
+      <p class="photo-crop-help">Drag the image to position it, then use the zoom slider to frame it.</p>
+      <div class="modal-footer">
+        <button id="cancel-photo-crop-btn" class="ghost" type="button">Cancel</button>
+        <button id="apply-photo-crop-btn" class="primary-btn" type="button">Use photo</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="chat-modal" class="modal hidden chat-thread-empty" role="dialog" aria-modal="true" aria-labelledby="chat-title">
+    <div class="modal-content chat-modal-content">
+      <aside class="chat-inbox-pane" aria-label="Inbox">
+        <div class="chat-inbox-heading">
+          <h2>Messages</h2>
+          <div class="chat-inbox-heading-actions">
+            <button class="chat-view-toggle pwa-install-btn hidden" type="button" aria-label="Install SAPC Reviewer" title="Install SAPC Reviewer">Install</button>
+            <button id="chat-add-friend-toggle" class="chat-view-toggle" type="button" aria-expanded="false" aria-controls="chat-add-friend-panel">+ Add friend</button>
+            <button id="close-chat-btn" class="chat-page-back-btn" type="button" aria-label="Back to reviewer">Back</button>
+          </div>
+        </div>
+        <label class="chat-inbox-search"><span class="sr-only">Search chats and friends</span><input id="chat-inbox-search" type="search" placeholder="Search chats and friends" autocomplete="off" /></label>
+        <section id="chat-add-friend-panel" class="chat-add-friend-panel hidden" aria-label="Add a friend">
+          <div class="chat-add-friend-panel-heading"><h3>Find classmates</h3><button id="chat-add-friend-close" class="ghost" type="button">Done</button></div>
+          <div class="friend-search-row">
+            <input id="chat-friend-search" type="search" placeholder="Find by username or name" aria-label="Find classmates by username or name" />
+            <button id="chat-friend-search-btn" class="primary-btn" type="button">Find</button>
+          </div>
+          <p id="chat-friend-status" class="friend-status hidden" role="status" aria-live="polite"></p>
+          <div id="chat-friend-search-results" class="saved-decks-list" aria-live="polite"></div>
+        </section>
+        <div class="chat-inbox-toolbar"><h3>Active now</h3><button id="chat-create-group-btn" class="chat-view-toggle" type="button">+ New group</button></div>
+        <div id="chat-active-now" class="chat-active-now" aria-label="Friends active now"></div>
+        <h3 class="chat-inbox-section-title">Recent</h3>
+        <div id="chat-inbox-list" class="chat-inbox-list" aria-live="polite"></div>
+        <button id="chat-new-chat-btn" class="chat-view-toggle hidden" type="button">New chat</button>
+      </aside>
+      <main id="chat-thread-pane" class="chat-thread-pane">
+      <header class="chat-thread-header">
+        <button id="chat-back-btn" class="chat-back-btn" type="button" aria-label="Back to inbox">‹</button>
+        <div id="chat-peer" class="chat-peer">
+          <img id="chat-peer-photo" class="chat-peer-photo hidden" alt="" />
+          <span id="chat-peer-avatar" class="chat-peer-avatar">P</span>
+          <span class="chat-peer-copy"><strong id="chat-title">Choose a conversation</strong><span id="chat-peer-status">Select someone to start chatting</span></span>
+        </div>
+        <div class="chat-header-actions">
+          <button id="chat-video-call-btn" class="chat-view-toggle" type="button" title="Start a peer-to-peer video call" disabled>Video call</button>
+          <button id="chat-voice-call-btn" class="chat-view-toggle" type="button" title="Start an audio-only call" disabled>Voice call</button>
+          <button id="chat-block-user-btn" class="chat-view-toggle chat-block-action hidden" type="button" title="Block this person">Block</button>
+          <button id="chat-details-toggle" class="chat-view-toggle" type="button" aria-expanded="false" aria-controls="chat-details-drawer" title="Chat details" aria-label="Chat details">ⓘ</button>
+        </div>
+      </header>
+      <div id="chat-delete-confirm" class="chat-delete-confirm hidden" role="alertdialog" aria-label="Delete chat confirmation">
+        <span id="chat-delete-confirm-message">Delete this conversation for both people?</span>
+        <div>
+          <button id="chat-delete-cancel-btn" type="button">Cancel</button>
+          <button id="chat-delete-confirm-btn" type="button">Delete chat</button>
+        </div>
+      </div>
+      <section id="chat-group-create-panel" class="chat-group-create-panel hidden" aria-labelledby="chat-group-create-title">
+        <div>
+          <p class="modal-eyebrow">NEW CONVERSATION</p>
+          <h3 id="chat-group-create-title">Create a group chat</h3>
+          <p>Choose at least two friends. You can include up to 19 friends.</p>
+        </div>
+        <label for="chat-group-name">Group name</label>
+        <input id="chat-group-name" type="text" maxlength="60" placeholder="e.g. Research group" />
+        <div id="chat-group-friend-list" class="chat-group-friend-list"></div>
+        <p id="chat-group-create-status" class="friend-status hidden" role="status" aria-live="polite"></p>
+        <div class="chat-group-create-actions">
+          <button id="chat-group-cancel-btn" class="ghost" type="button">Cancel</button>
+          <button id="chat-group-start-btn" class="primary-btn" type="button" disabled>Create group chat</button>
+        </div>
+      </section>
+      <div id="chat-empty-state" class="chat-empty-state">Select a conversation or choose an active friend to start chatting.</div>
+      <div id="chat-typing" class="chat-typing hidden" role="status"><span id="chat-typing-label"></span><span class="chat-typing-bubble" aria-label="Typing"><i></i><i></i><i></i></span></div>
+      <div id="chat-messages" class="chat-messages" aria-live="polite"></div>
+      <form id="chat-form" class="chat-form">
+        <div class="chat-photo-picker-wrap">
+          <button id="chat-photo-picker-btn" class="chat-tool-btn chat-file-btn" type="button" aria-label="Attach a photo or file" aria-haspopup="true" aria-expanded="false" title="Attach a photo or file">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8.5 12.5 6.9-6.9a3 3 0 0 1 4.2 4.2l-9.2 9.2a5 5 0 0 1-7.1-7.1l9.2-9.2"/></svg>
+          </button>
+          <div id="chat-photo-choice" class="chat-photo-choice hidden" role="menu">
+            <button id="chat-take-photo-btn" type="button" role="menuitem">Take photo</button>
+            <button id="chat-choose-gallery-btn" type="button" role="menuitem">Choose a photo</button>
+            <button id="chat-choose-video-btn" type="button" role="menuitem">Choose a video</button>
+            <button id="chat-choose-file-btn" type="button" role="menuitem">Choose a file</button>
+          </div>
+        </div>
+        <button id="chat-emoji-btn" class="chat-tool-btn chat-extra-tool" type="button" aria-label="Choose emoji" aria-expanded="false" title="Emoji">😊</button>
+        <button id="chat-voice-record-btn" class="chat-tool-btn chat-extra-tool chat-voice-record-btn" type="button" aria-label="Record a voice message" title="Record a voice message">🎙</button>
+        <input id="chat-photo-gallery-input" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/bmp,image/heic,image/heif" multiple hidden />
+        <input id="chat-photo-camera-input" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/bmp,image/heic,image/heif" capture="environment" hidden />
+        <input id="chat-video-gallery-input" type="file" accept="video/mp4,video/webm,video/quicktime,video/3gpp,video/x-m4v,.mp4,.webm,.mov,.3gp,.m4v" multiple hidden />
+        <input id="chat-document-input" type="file" accept=".pdf,.txt,.csv,.doc,.docx,.xls,.xlsx,.ppt,.pptx" hidden />
+        <div id="chat-emoji-picker" class="chat-compose-popover chat-emoji-picker hidden" aria-label="Choose an emoji">
+          <input id="chat-emoji-search" type="search" placeholder="Search emoji" aria-label="Search emoji" />
+          <div class="chat-emoji-tones" role="group" aria-label="Emoji skin tone"><button type="button" data-emoji-tone="" aria-label="Default skin tone">⚪</button><button type="button" data-emoji-tone="🏻" aria-label="Light skin tone">🏻</button><button type="button" data-emoji-tone="🏼" aria-label="Medium-light skin tone">🏼</button><button type="button" data-emoji-tone="🏽" aria-label="Medium skin tone">🏽</button><button type="button" data-emoji-tone="🏾" aria-label="Medium-dark skin tone">🏾</button><button type="button" data-emoji-tone="🏿" aria-label="Dark skin tone">🏿</button></div>
+          <div id="chat-emoji-categories" class="chat-emoji-categories" role="tablist" aria-label="Emoji categories"><button type="button" data-emoji-category="recent">Recent</button><button type="button" data-emoji-category="smileys" aria-selected="true">Smileys</button><button type="button" data-emoji-category="gestures">Gestures</button><button type="button" data-emoji-category="hearts">Hearts</button><button type="button" data-emoji-category="objects">Objects</button><button type="button" data-emoji-category="nature">Nature</button></div>
+          <div id="chat-emoji-grid" class="chat-emoji-grid" role="listbox" aria-label="Emoji choices"></div>
+        </div>
+        <div class="chat-compose-field">
+          <div id="chat-reply-preview" class="chat-reply-preview hidden" aria-live="polite">
+            <div><strong id="chat-reply-label">Replying</strong><span id="chat-reply-text"></span></div>
+            <button id="chat-reply-cancel" type="button" aria-label="Cancel reply">&times;</button>
+          </div>
+          <div id="chat-recording-indicator" class="chat-recording-indicator hidden" role="status" aria-live="polite">Recording 0:00 — tap the stop button when finished.</div>
+          <div id="chat-attachment-preview" class="chat-attachment-preview hidden"></div>
+          <textarea id="chat-input" rows="1" maxlength="2000" placeholder="Message..." autocomplete="off"></textarea>
+        </div>
+        <div id="chat-quick-reactions" class="chat-quick-reactions"><button id="chat-quick-react" class="chat-tool-btn chat-quick-react" type="button" aria-label="Send a thumbs up">👍</button><button id="chat-quick-heart" class="chat-tool-btn chat-quick-react" type="button" aria-label="Send a heart">❤️</button></div>
+        <button class="primary-btn" type="submit">Send</button>
+      </form>
+      <p id="chat-status" class="friend-status hidden" role="status"></p>
+      </main>
+      <aside id="chat-details-drawer" class="chat-details-drawer" aria-label="Chat details" aria-hidden="true">
+        <div class="chat-details-heading"><h3>Chat details</h3><button id="chat-details-close" class="close-btn" type="button" aria-label="Close chat details">&times;</button></div>
+        <h4>Shared media</h4><div id="chat-media-gallery" class="chat-media-gallery"></div>
+        <h4>Chat nicknames</h4><p class="chat-details-help">Nicknames are saved on this device for this conversation.</p><div id="chat-nickname-list" class="chat-nickname-list"></div>
+        <h4>Quick reaction</h4><p class="chat-details-help">Choose the emoji used by the quick reaction button.</p><div id="chat-custom-reaction" class="chat-custom-reaction" role="group" aria-label="Choose quick reaction"></div>
+        <h4>Chat theme</h4><div id="chat-theme-picker" class="chat-theme-picker" role="group" aria-label="Chat theme">
+          <button type="button" data-chat-theme-choice="default" aria-label="Default theme">Default</button><button type="button" data-chat-theme-choice="ocean" aria-label="Ocean theme">Ocean</button><button type="button" data-chat-theme-choice="sunset" aria-label="Sunset theme">Sunset</button><button type="button" data-chat-theme-choice="mint" aria-label="Mint theme">Mint</button><button type="button" data-chat-theme-choice="lavender" aria-label="Lavender theme">Lavender</button>
+        </div>
+        <div class="chat-photo-theme-control"><input id="chat-theme-photo-input" type="file" accept="image/jpeg,image/png,image/webp" hidden /><button id="chat-theme-photo-btn" class="secondary-btn" type="button">Add a picture theme</button><button id="chat-theme-photo-remove" class="ghost hidden" type="button">Remove picture</button><img id="chat-theme-photo-preview" class="chat-theme-photo-preview hidden" alt="Custom chat theme preview" /></div>
+        <h4>Members</h4><div id="chat-member-list" class="chat-member-list"></div>
+        <div class="chat-safety-actions"><button id="chat-report-user-btn" class="ghost hidden" type="button">Report user</button></div>
+        <button id="chat-delete-btn" class="chat-delete-btn" type="button">Delete conversation</button>
+      </aside>
+    </div>
+  </div>
+  <div id="chat-video-lightbox" class="chat-video-lightbox hidden" role="dialog" aria-modal="true" aria-label="Shared video viewer">
+    <button id="chat-video-lightbox-close" type="button" aria-label="Close video">&times;</button>
+    <video id="chat-video-lightbox-player" controls playsinline></video>
+  </div>
+
+  <section id="policy-update-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="policy-update-title">
+    <div class="modal-content policy-update-content">
+      <p class="modal-eyebrow">ACCOUNT NOTICE</p><h2 id="policy-update-title">Review our Terms and Privacy Policy</h2>
+      <p>To continue using the app, review the current policies and confirm your choices. You can withdraw consent later through the Privacy Request form; some account features may then stop working.</p>
+      <label class="policy-update-check"><input id="policy-update-terms" type="checkbox" /><span>I agree to the <a href="/terms.html" target="_blank" rel="noopener noreferrer">Terms of Service</a>.</span></label>
+      <label class="policy-update-check"><input id="policy-update-privacy" type="checkbox" /><span>I have read the <a href="/privacy.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a> and consent to the processing it describes.</span></label>
+      <p id="policy-update-status" role="status" aria-live="polite"></p>
+      <div class="modal-footer"><button id="policy-update-signout" class="ghost" type="button">Sign out</button><button id="policy-update-accept" class="primary-btn" type="button">Agree and continue</button></div>
+    </div>
+  </section>
+
+  <section id="safety-report-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="safety-report-title">
+    <div class="modal-content safety-report-content">
+      <div class="modal-header"><div><p class="modal-eyebrow">SAFETY</p><h3 id="safety-report-title">Report a user or message</h3></div><button id="safety-report-close" class="close-btn" type="button" aria-label="Close report form">&times;</button></div>
+      <div class="modal-body">
+        <label for="safety-report-category">What happened?</label>
+        <select id="safety-report-category"><option value="harassment">Harassment or bullying</option><option value="threat">Threats or violence</option><option value="sexual_content">Sexual content</option><option value="spam">Spam or impersonation</option><option value="self_harm">Self-harm concern</option><option value="other">Something else</option></select>
+        <label for="safety-report-details">Details (optional)</label><textarea id="safety-report-details" rows="4" maxlength="2000" placeholder="Share context that may help review this report."></textarea>
+        <p id="safety-report-status" role="status" aria-live="polite"></p>
+      </div>
+      <div class="modal-footer"><button id="safety-report-cancel" class="ghost" type="button">Cancel</button><button id="safety-report-submit" class="primary-btn" type="button">Submit report</button></div>
+    </div>
+  </section>
+
+  <section id="peer-call-modal" class="peer-call-modal hidden" role="dialog" aria-modal="true" aria-labelledby="peer-call-title">
+    <div class="peer-call-card">
+      <header class="peer-call-topbar">
+        <div class="peer-call-identity">
+          <span id="peer-call-avatar" class="peer-call-avatar" aria-hidden="true">P</span>
+          <div class="peer-call-heading"><span id="peer-call-type" class="peer-call-type">VIDEO CALL</span><h2 id="peer-call-title">Your friend</h2></div>
+        </div>
+        <div class="peer-call-live-status"><span class="peer-call-live-dot" aria-hidden="true"></span><span id="peer-call-status" role="status" aria-live="polite">Connecting…</span><time id="peer-call-duration" class="peer-call-duration">--:--</time><span id="peer-call-quality" class="peer-call-quality" title="Connection quality unavailable" aria-label="Connection quality unavailable"><i></i><i></i><i></i><span id="peer-call-latency">— ms</span></span><button id="peer-call-minimize" class="peer-call-header-button" type="button" aria-label="Minimize call">—</button></div>
+      </header>
+      <main class="peer-call-stage">
+        <div id="peer-call-voice-scene" class="peer-call-voice-scene" aria-label="Voice call">
+          <span id="peer-call-voice-avatar" class="peer-call-voice-avatar" aria-hidden="true">P</span>
+          <strong id="peer-call-voice-name">Your friend</strong>
+          <span id="peer-call-voice-caption" class="peer-call-voice-caption">Waiting to connect</span>
+          <span id="peer-call-local-voice-avatar" class="peer-call-local-voice-avatar" aria-label="You">You</span>
+        </div>
+        <div class="peer-call-videos"><video id="peer-call-remote" autoplay playsinline muted></video><video id="peer-call-local" autoplay playsinline muted></video></div>
+      </main>
+      <audio id="peer-call-remote-audio" autoplay playsinline></audio>
+      <div id="peer-call-device-toast" class="peer-call-device-toast hidden" role="status" aria-live="polite"><span id="peer-call-device-toast-text"></span><button id="peer-call-device-switch" type="button">Switch</button><button id="peer-call-device-dismiss" type="button" aria-label="Dismiss">×</button></div>
+      <div id="peer-call-incoming-actions" class="peer-call-actions peer-call-incoming-actions hidden"><button id="peer-call-accept" class="call-control call-control-accept" type="button" aria-label="Accept call"><span class="call-control-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6.6 10.8a15.5 15.5 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1.02-.24c1.12.37 2.32.56 3.58.56a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.6 21 3 13.4 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.26.2 2.46.56 3.58a1 1 0 0 1-.25 1.02z"/></svg></span><span>Accept</span></button><button id="peer-call-decline" class="call-control call-control-end" type="button" aria-label="Decline call"><span class="call-control-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4.2 15.3 2.4-2.1a8.2 8.2 0 0 1 10.8 0l2.4 2.1a1 1 0 0 1 .1 1.5l-2 2.2a1 1 0 0 1-1.3.2L14 17.4a1 1 0 0 1-.5-.9v-1.4a6 6 0 0 0-3 0v1.4a1 1 0 0 1-.5.9l-2.6 1.8a1 1 0 0 1-1.3-.2l-2-2.2a1 1 0 0 1 .1-1.5z"/></svg></span><span>Decline</span></button></div>
+      <div id="peer-call-active-actions" class="peer-call-actions peer-call-control-dock hidden">
+        <div id="peer-call-settings-popover" class="peer-call-settings-popover hidden" aria-label="Call device settings">
+          <label for="peer-call-audio-input">Microphone</label><select id="peer-call-audio-input"></select>
+          <label for="peer-call-audio-output">Speaker / Output</label><select id="peer-call-audio-output"></select>
+          <label for="peer-call-video-input">Camera</label><select id="peer-call-video-input"></select>
+          <label class="peer-call-toggle-row" for="peer-call-noise"><input id="peer-call-noise" type="checkbox" checked><span>Noise suppression</span></label>
+          <label for="peer-call-voice-mode">Voice mode</label><select id="peer-call-voice-mode"><option value="open">Open mic</option><option value="ptt">Push to talk</option></select>
+          <div class="peer-call-keybind-row"><span>Push-to-talk key</span><button id="peer-call-keybind" type="button">Space</button></div>
+          <div class="peer-call-meter-wrap"><span>Mic test</span><div id="peer-call-mic-meter" role="meter" aria-label="Microphone input level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div></div>
+        </div>
+        <button id="peer-call-enable-audio" class="call-audio-permission hidden" type="button">Enable audio</button>
+        <div class="peer-call-control-group"><button id="peer-call-mute" class="call-control" type="button" aria-label="Mute microphone" aria-pressed="false"><span class="call-control-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.93V21h2v-3.07A7 7 0 0 0 19 11z"/></svg></span><span id="peer-call-mute-label">Mute</span></button><button id="peer-call-mic-menu" class="call-control-chevron" type="button" aria-label="Choose microphone" title="Microphone options">⌄</button></div>
+        <div class="peer-call-control-group"><button id="peer-call-camera" class="call-control" type="button" aria-label="Turn camera off" aria-pressed="false"><span class="call-control-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1l5 3V6l-5 3V8a2 2 0 0 0-2-2z"/></svg></span><span id="peer-call-camera-label">Camera</span></button><button id="peer-call-camera-menu" class="call-control-chevron" type="button" aria-label="Choose camera" title="Camera options">⌄</button></div>
+        <button id="peer-call-screen" class="call-control" type="button" aria-label="Share screen" aria-pressed="false"><span class="call-control-icon" aria-hidden="true">▣</span><span>Share</span></button>
+        <button id="peer-call-settings-button" class="call-control" type="button" aria-label="Call settings" aria-expanded="false"><span class="call-control-icon" aria-hidden="true">⚙</span><span>Settings</span></button>
+        <span id="peer-call-ptt-status" class="peer-call-ptt-status hidden" role="status">Hold Space to talk</span>
+        <button id="peer-call-end" class="call-control call-control-end" type="button" aria-label="End call"><span class="call-control-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4.2 15.3 2.4-2.1a8.2 8.2 0 0 1 10.8 0l2.4 2.1a1 1 0 0 1 .1 1.5l-2 2.2a1 1 0 0 1-1.3.2L14 17.4a1 1 0 0 1-.5-.9v-1.4a6 6 0 0 0-3 0v1.4a1 1 0 0 1-.5.9l-2.6 1.8a1 1 0 0 1-1.3-.2l-2-2.2a1 1 0 0 1 .1-1.5z"/></svg></span><span>End call</span></button>
+      </div>
+      <div id="peer-call-mini-controls" class="peer-call-mini-controls hidden"><button id="peer-call-mini-mute" type="button" aria-label="Mute microphone">Mic</button><button id="peer-call-mini-camera" type="button" aria-label="Turn camera off">Cam</button><button id="peer-call-expand" type="button">Expand</button></div>
+    </div>
+  </section>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="firebase-config.js?v=20261116-supabase-v1"></script>
+  <script src="api-config.js?v=20261119-api-route-v2"></script>
+  <script src="firebase-services.js?v=20261119-api-route-v2"></script>
+  <script src="peer-call.js?v=20261122-call-controls-v1"></script>
+  <script src="app.js?v=20261122-call-controls-v1"></script>
+  <script src="pwa.js?v=20261122-pwa-v1"></script>
+</body>
+</html>
